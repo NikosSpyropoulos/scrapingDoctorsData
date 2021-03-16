@@ -3,6 +3,7 @@ from scrapy.loader import ItemLoader
 
 
 class DoctorsDataSpider(scrapy.Spider):
+    page_number = 1
     name = 'doctors'
 
     start_urls = [
@@ -11,6 +12,7 @@ class DoctorsDataSpider(scrapy.Spider):
 
     def parse(self, response):
         blank_line = 0
+        global page_number
         for doctor in response.xpath("//div[@class = 'AdvAreaLeft']/div"):
             # l = ItemLoader(item=DoctorsItem(), selector=doctor)
             # l.add_xpath('Office_Name', "div/div/h2/a/meta/@content")
@@ -45,10 +47,7 @@ class DoctorsDataSpider(scrapy.Spider):
             }
             blank_line = blank_line + 1
 
-        page_number = response.xpath("//*[@id='pagerPlaceHolder']/div/div[2]/span.text()").extract_first()
-        num = int(page_number) + 1
-        next_page = response.xpath(
-            "//*[@id='pagerPlaceHolder']/div/div[2]/a["+page_number+"]/@href").extract_first()
+        next_page = response.xpath("//*[@id='pagerPlaceHolder']/div/div[2]/a/@href").extract_first()
         if next_page:
             next_page_link = response.urljoin(next_page)
             yield scrapy.Request(url=next_page_link, callback=self.parse)
